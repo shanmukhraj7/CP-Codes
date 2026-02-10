@@ -22,6 +22,7 @@ typedef vector<vector<ll>> vvll;
 #define revi(i, a, b) for(ll i = a; i >= b; i--)
 #define forii(i, a, b) for(ll i = a; i <= b; i++)
 #define revii(i, a, b) for(ll i = a; i >= b; i--)
+#define pll pair<ll, ll>
 
 void _print(int x) { cerr << x; }
 void _print(ll x) { cerr << x; }
@@ -39,65 +40,29 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
+    // your code here
+    ll n, k;
+    cin >> n >> k;
+    queue<ll> q;
+    forii(i, 1, n) q.push(i);
+    ll cnt = 0;
+    vll res;
+    while(!q.empty()){
+        auto x = q.front();
+        q.pop();
+        cnt++;
+        if(cnt == k + 1){
+            res.pb(x);
+            cnt = 0;
+        }
         else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+            q.push(x);
         }
     }
+    for(auto x : res)
+        cout << x << " ";
+    cout << endl;
 }
 
 int main() {

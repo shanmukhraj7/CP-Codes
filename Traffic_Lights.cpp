@@ -39,64 +39,26 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
-        }
+    // your code here
+    ll x, n;
+    cin >> x >> n;
+    set<ll> st;
+    multiset<ll> mst;
+    st.insert(0);
+    st.insert(x);
+    mst.insert(x);
+    fori(i, 0, n){
+        ll c;
+        cin >> c;
+        auto it = st.lower_bound(c);
+        ll r = *it, l = *prev(it);
+        st.insert(c);
+        mst.erase(mst.find(r - l));
+        mst.insert(c - l);
+        mst.insert(r - c);
+        st.insert(c);
+        cout << *mst.rbegin() << " ";
     }
 }
 

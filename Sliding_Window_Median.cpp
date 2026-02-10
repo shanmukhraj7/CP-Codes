@@ -39,65 +39,57 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+    // your code here
+    ll n, k;
+    cin >> n >> k;
+    vll a(n);
+    fori(i, 0, n) cin >> a[i];
+    multiset<ll> st1, st2;
+    auto rb = [&](){
+        while(st1.size() > st2.size() + 1){
+            st2.insert(*prev(st1.end()));
+            st1.erase(prev(st1.end()));
+        }
+
+        while(st1.size() < st2.size()){
+            st1.insert(*st2.begin());
+            st2.erase(st2.begin());
+        }
+    };
+
+    auto add = [&](ll& x){
+        if(st1.empty() || x <= *prev(st1.end()))
+            st1.insert(x);
+        else
+            st2.insert(x);
+        rb();
+    };
+
+    auto rem = [&](ll& x){
+        if(st1.find(x) != st1.end())
+            st1.erase(st1.find(x));
+        else if(st2.find(x) != st2.end())
+            st2.erase(st2.find(x));
+        rb();
+    };
+
+    fori(i, 0, n){
+        add(a[i]);
+        if(i >= k)
+            rem(a[i - k]);
+        if(i >= k - 1){
+            if(k % 2){
+                cout << *prev(st1.end()) << " ";
+            }
+            else{
+                ll x = *prev(st1.end());
+                ll y = *st2.begin();
+                cout << min(x, y) << " ";
+            }
         }
     }
+    cout << endl;
 }
 
 int main() {

@@ -22,6 +22,7 @@ typedef vector<vector<ll>> vvll;
 #define revi(i, a, b) for(ll i = a; i >= b; i--)
 #define forii(i, a, b) for(ll i = a; i <= b; i++)
 #define revii(i, a, b) for(ll i = a; i >= b; i--)
+#define pll pair<ll, ll>
 
 void _print(int x) { cerr << x; }
 void _print(ll x) { cerr << x; }
@@ -39,65 +40,38 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
+    // your code here
+    ll n, target;
+    cin >> n >> target;
+    vll a(n);
     for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+    ll n1 = n / 2, n2 = n - n1;
+    vll left(a.begin(), a.begin() + n1), right(a.begin() + n1, a.end());
+    vll b1, b2;
+    fori(i, 0, (1 << n1)){
+        ll sum = 0;
+        fori(j, 0, n1){
+            if(i & (1 << j))
+                sum += left[j];
         }
+        b1.pb(sum);
     }
+    fori(i, 0, (1 << n2)){
+        ll sum = 0;
+        fori(j, 0, n2){
+            if(i & (1 << j))
+                sum += right[j];
+        }
+        b2.pb(sum);
+    }
+    sort(all(b2));
+    ll res = 0;
+    fori(i, 0, b1.size()){
+        ll comp = target - b1[i];
+        res += ub(b2, comp) - lb(b2, comp);
+    }
+    cout << res << endl;
 }
 
 int main() {

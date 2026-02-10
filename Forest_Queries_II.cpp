@@ -39,63 +39,68 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
 
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
+    // your code here
+    ll n, q;
+    cin >> n >> q;
+    vector<vector<char>> a(n, vector<char>(n));
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            cin >> a[i][j];
+        }
+    }
+    vvll b(n, vector<ll>(n));
+    vvll seg(n + 1, vll(n + 1, 0));
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            b[i][j] = (a[i][j] == '*');
+        }
+    }
+    function<void(ll, ll, ll)> update = [&] (ll x, ll y, ll v){
+        for(int i = x; i <= n; i += i & -i){
+            for(int j = y; j <= n; j += j & -j){
+                seg[i][j] += v;
+            }
+        }
+    };
+    function<ll(ll, ll)> query = [&] (ll x, ll y)->ll{
+        ll res = 0;
+        for(int i = x; i > 0; i -= i & -i){
+            for(int j = y; j > 0; j -= j & -j){
+                res += seg[i][j];
+            }
+        }
+        return res;
+    };
+    function<ll(ll, ll, ll, ll)> calc = [&] (ll x1, ll y1, ll x2, ll y2)->ll{
+        return query(x2, y2) - query(x1 - 1, y2) - query(x2, y1 - 1) + query(x1 - 1, y1 - 1);
+    };
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            if(b[i][j])
+                update(i + 1, j + 1, 1);
+        }
+    }
+    fori(i, 0, q){
+        ll type;
+        cin >> type;
+        if(type == 1){
+            ll x, y;
+            cin >> x >> y;
+            if(b[x - 1][y - 1]){
+                b[x - 1][y - 1] ^= 1;
+                update(x, y, -1);
+            }
+            else if(!b[x - 1][y - 1]){
+                b[x - 1][y - 1] ^= 1;
+                update(x, y, 1);
+            }
+        }
         else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+            ll x1, y1, x2, y2;
+            cin >> x1 >> y1 >> x2 >> y2;
+            cout << calc(x1, y1, x2, y2) << endl;
         }
     }
 }

@@ -39,65 +39,42 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
 
 void solve() {
+    // your code here
     ll n, m;
     cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+    vvll adj(n + 1);
+    forii(i, 1, m){
+        ll a, b;
+        cin >> a >> b;
+        adj[a].pb(b);
+        adj[b].pb(a);
+    }
+    vll c(n + 1, 0);
+    forii(i, 1, n){
+        if(c[i] != 0) continue;
+        queue<ll> q;
+        q.push(i);
+        c[i] = 1;
+        while(!q.empty()){
+            auto nd = q.front(); q.pop();
+            for(auto nbr : adj[nd]){
+                if(c[nbr] == 0){
+                    c[nbr] = 3 - c[nd];
+                    q.push(nbr);
+                }
+                else if(c[nbr] == c[nd]){
+                    cout << "IMPOSSIBLE" << endl;
+                    return;
+                }
+            }
         }
     }
+    forii(i, 1, n){
+        cout << c[i] << " ";
+    }
+    cout << endl;
 }
 
 int main() {

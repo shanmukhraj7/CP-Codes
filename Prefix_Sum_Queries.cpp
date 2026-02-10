@@ -22,6 +22,7 @@ typedef vector<vector<ll>> vvll;
 #define revi(i, a, b) for(ll i = a; i >= b; i--)
 #define forii(i, a, b) for(ll i = a; i <= b; i++)
 #define revii(i, a, b) for(ll i = a; i >= b; i--)
+#define pll pair<ll, ll>
 
 void _print(int x) { cerr << x; }
 void _print(ll x) { cerr << x; }
@@ -38,70 +39,83 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
-
 class SGT{
-    vll seg;
+    vll seg, pfs;
 public:
     SGT(ll n){
         seg.resize(4 * n + 2);
+        pfs.resize(4 * n + 2, 0);
     }
 
     void build(ll idx, ll low, ll high, vll& a){
         if(low == high){
             seg[idx] = a[low];
+            pfs[idx] = max(0LL, a[low]);
             return;
         }
         ll mid = low + ((high - low) >> 1);
         build(2 * idx + 1, low, mid, a);
         build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
+        seg[idx] = seg[2 * idx + 1] + seg[2 * idx + 2];
+        pfs[idx] = max(pfs[2 * idx + 1], seg[2 * idx + 1] + pfs[2 * idx + 2]);
     }
 
-    void update(ll idx, ll low, ll high, ll v, ll vi){
+    void update(ll idx, ll low, ll high, ll vi, ll v){
         if(low == high){
-            seg[idx] -= v;
+            seg[idx] = v;
+            pfs[idx] = max(0LL, v);
             return;
         }
         ll mid = low + ((high - low) >> 1);
         if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
+            update(2 * idx + 1, low, mid, vi, v); 
         else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
+            update(2 * idx + 2, mid + 1, high, vi, v);
+        seg[idx] = seg[2 * idx + 1] + seg[2 * idx + 2];
+        pfs[idx] = max(pfs[2 * idx + 1], seg[2 * idx + 1] + pfs[2 * idx + 2]);
     }
 
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
+    pll query(ll idx, ll low, ll high, ll ql, ll qr){
+        if(qr < low || high < ql) return {0, 0};
+        if(ql <= low && high <= qr) return {seg[idx], pfs[idx]};
         ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
+        auto left = query(2 * idx + 1, low, mid, ql, qr);
+        auto right = query(2 * idx + 2, mid + 1, high, ql, qr);
+        ll total_Sum = left.first + right.first;
+        ll max_pfs = max(left.second, left.first + right.second);
+        return {total_Sum, max_pfs};
     }
 };
 
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
+    // your code here
+    ll n, q;
+    cin >> n >> q;
+    vll a(n);
     for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
     SGT sgt(n);
     sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
+    fori(i, 0, q){
+        ll type;
+        cin >> type;
+        if(type == 1){
+            ll vi, v;
+            cin >> vi >> v;
+            vi--;
+            sgt.update(0, 0, n - 1, vi, v);
+        }
         else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+            ll a, b;
+            cin >> a >> b;
+            a--, b--;
+            cout << sgt.query(0, 0, n - 1, a, b).second << endl;
         }
     }
+
 }
 
 int main() {
-    fast_io();
+    // fast_io();
 
     // int t;
     // cin >> t;

@@ -22,6 +22,7 @@ typedef vector<vector<ll>> vvll;
 #define revi(i, a, b) for(ll i = a; i >= b; i--)
 #define forii(i, a, b) for(ll i = a; i <= b; i++)
 #define revii(i, a, b) for(ll i = a; i >= b; i--)
+#define pll pair<ll, ll>
 
 void _print(int x) { cerr << x; }
 void _print(ll x) { cerr << x; }
@@ -37,67 +38,35 @@ template <class K, class V> void _print(map<K, V> m) { cerr << "{ "; for (auto i
 template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; for (auto i : m) { _print(i); cerr << " "; } cerr << "}"; }
 
 // const ll MOD = 1e9 + 7;
-// const ll INF = 1e18;
-
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
+const ll INF = 1e18;
 
 void solve() {
+    // your code here
     ll n, m;
     cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
+    vector<vector<pll>> a(n + 1);
     fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+        ll u, v, wt;
+        cin >> u >> v >> wt;
+        a[u].pb({v, wt});
+    }
+    vll dist(n + 1, INF);
+    priority_queue<pll, vector<pll>, greater<pll>> pq; // dist, node
+    pq.push({0, 1});
+    dist[1] = 0;
+    while(!pq.empty()){
+        auto[d, node] = pq.top();
+        pq.pop();
+        if(d > dist[node]) continue;
+        for(auto [nbr, nbr_dist] : a[node]){
+            if(d + nbr_dist < dist[nbr]){
+                dist[nbr] = d + nbr_dist;
+                pq.push({dist[nbr], nbr});
+            }
         }
     }
+   forii(i, 1, n) cout << dist[i] << " ";
+    cout << endl;
 }
 
 int main() {

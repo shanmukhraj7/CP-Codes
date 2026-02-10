@@ -39,76 +39,53 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
-
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
-        }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
 void solve() {
-    ll n, m;
-    cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+    // your code here
+    ll n;
+    cin >> n;
+    string s;
+    cin >> s;
+    // if(n == 1){
+    //     cout << 1 << endl;
+    //     return;
+    // }
+    ll o = 0, idx1 = -1, idx2 = -1;
+    fori(i, 0, n){
+        if(s[i] == '1'){
+            o++;
+            if(idx1 == -1) idx1 = i;
+            idx2 = i; 
         }
     }
+    if(o == 0){
+        cout << (n + 2) / 3 << endl;
+        return;
+    }
+    ll v = 0;
+    v += (idx1 + 1) / 3;
+    v += (n - idx2) / 3;
+    ll pv = idx1;
+    fori(i, idx1 + 1, n){
+        if(s[i] == '1'){
+            v += (i - pv - 1) / 3;
+            pv = i;
+        }
+    }
+    cout << o + v << endl;
+
 }
 
 int main() {
     fast_io();
 
-    // int t;
-    // cin >> t;
-    // while (t--){
-    //    solve();
-    // }
+    int t;
+    cin >> t;
+    while (t--){
+       solve();
+    }
 
-    solve();
+    // solve();
     return 0;
 }
+
+

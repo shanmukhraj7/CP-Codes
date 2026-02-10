@@ -39,65 +39,61 @@ template <class K, class V> void _print(unordered_map<K, V> m) { cerr << "{ "; f
 // const ll MOD = 1e9 + 7;
 // const ll INF = 1e18;
 
-class SGT{
-    vll seg;
-public:
-    SGT(ll n){
-        seg.resize(4 * n + 2);
-    }
+vvll adj;
+vll par, v;
+ll cs = -1, ce = -1;
 
-    void build(ll idx, ll low, ll high, vll& a){
-        if(low == high){
-            seg[idx] = a[low];
-            return;
+bool dfs(ll u, ll p){
+    v[u] = 1;
+    for(auto nbr : adj[u]){
+        if(nbr == p) continue;
+        if(!v[nbr]){
+            par[nbr] = u;
+            if (dfs(nbr, u))
+                return true;
         }
-        ll mid = low + ((high - low) >> 1);
-        build(2 * idx + 1, low, mid, a);
-        build(2 * idx + 2, mid + 1, high, a);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
-    }
-
-    void update(ll idx, ll low, ll high, ll v, ll vi){
-        if(low == high){
-            seg[idx] -= v;
-            return;
+        else {
+            cs = nbr, ce = u;
+            return true;
         }
-        ll mid = low + ((high - low) >> 1);
-        if(vi <= mid)
-            update(2 * idx + 1, low, mid, v, vi);
-        else
-            update(2 * idx + 2, mid + 1, high, v, vi);
-        seg[idx] = max(seg[2 * idx + 1], seg[2 * idx + 2]);
     }
-
-    ll find(ll idx, ll low, ll high, ll v){
-        if(seg[idx] < v) return -1;
-        if(low == high) return low;
-        ll mid = low + ((high - low) >> 1);
-        if(seg[2 * idx + 1] >= v)
-            return find(2 * idx + 1, low, mid, v);
-        else
-            return find(2 * idx + 2, mid + 1, high, v);
-    }
-};
-
+    return false;
+}
 void solve() {
+    // your code here
     ll n, m;
     cin >> n >> m;
-    vll a(n), b(m);
-    for(auto& x : a) cin >> x;
-    for(auto& x : b) cin >> x;
-    SGT sgt(n);
-    sgt.build(0, 0, n - 1, a);
-    fori(i, 0, m){
-        ll idx = sgt.find(0, 0, n - 1, b[i]);
-        if(idx == -1)
-            cout << 0 << " ";
-        else{
-            cout << idx + 1 << " ";
-            sgt.update(0, 0, n - 1, b[i], idx);
+    adj.resize(n + 1);
+    forii(i, 1, m){
+        ll a, b;
+        cin >> a >> b;
+        adj[a].pb(b);
+        adj[b].pb(a);
+    }
+    par.resize(n + 1, -1);
+    v.resize(n + 1, 0);
+    forii(i, 1, n){
+        if(!v[i]){
+            if(dfs(i, -1))
+                break;
         }
     }
+    if(cs == -1){
+        cout << "IMPOSSIBLE" << endl;
+        return;
+    }
+    vll c;
+    c.pb(cs);
+    for(ll i = ce; i != cs; i = par[i]){
+        c.pb(i);
+    }
+    c.pb(cs);
+    reverse(all(c));
+    cout << c.size() << endl;
+    for(auto& x : c)
+        cout << x << " ";
+    cout << endl;
+
 }
 
 int main() {
